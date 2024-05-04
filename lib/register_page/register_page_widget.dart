@@ -280,7 +280,7 @@ class _RegisterPageWidgetState extends State<RegisterPageWidget> {
                   padding: const EdgeInsetsDirectional.fromSTEB(0.0, 8.0, 0.0, 0.0),
                   child: FFButtonWidget(
                     onPressed: () async {
-                      if (_model.textController2.text ==
+                      if (_model.textController2.text !=
                           _model.textController3.text) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
