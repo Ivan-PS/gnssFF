@@ -73,6 +73,10 @@ class LoginCall {
         response,
         r'''$.access_token''',
       ));
+  int? userid(dynamic response) => castToType<int>(getJsonField(
+        response,
+        r'''$.user_id''',
+      ));
 }
 
 /// End httpsrtxgvmuksdevtunnelsms Group Code
