@@ -1,3 +1,4 @@
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
 
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -28,10 +29,26 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+  bool isLoading = true;
+  late AndroidDeviceInfo androidInfo;
   ThemeMode _themeMode = FlutterFlowTheme.themeMode;
 
   late AppStateNotifier _appStateNotifier;
   late GoRouter _router;
+
+  @override
+  void didChangeDependencies() async {
+    DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
+    setState(() {
+      isLoading = true;
+    });
+    androidInfo = await deviceInfo.androidInfo;
+
+    setState(() {
+      isLoading = false;
+    });
+    super.didChangeDependencies();
+  }
 
   @override
   void initState() {

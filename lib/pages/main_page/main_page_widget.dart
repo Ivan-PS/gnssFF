@@ -1,3 +1,10 @@
+import 'dart:ffi';
+
+import 'package:permission_handler/permission_handler.dart';
+import 'package:raw_gnss/raw_gnss.dart';
+
+import '../../Data.dart';
+import '../../WebService/WebService.dart';
 import '/flutter_flow/flutter_flow_animations.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -21,6 +28,7 @@ class _MainPageWidgetState extends State<MainPageWidget>
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
   final animationsMap = <String, AnimationInfo>{};
+  bool _hasPermissions = false;
 
   @override
   void initState() {
@@ -186,6 +194,137 @@ class _MainPageWidgetState extends State<MainPageWidget>
           !anim.applyInitialState),
       this,
     );
+    startReading();
+  }
+
+  void startReading() {
+    DateTime lastDate = DateTime.now();
+
+    super.initState();
+
+    RawGnss().gnssMeasurementEvents.listen((e) {
+      Map<String, dynamic> fields = {};
+      Map<String, dynamic> tags = {};
+
+      print("raw");
+      e.measurements?.forEach((element) {
+        Map<String, dynamic> data = {
+          'contents': element.contents,
+          'accumulatedDeltaRangeMeters': element.accumulatedDeltaRangeMeters,
+          'accumulatedDeltaRangeState': element.accumulatedDeltaRangeState,
+          'accumulatedDeltaRangeUncertaintyMeters':
+              element.accumulatedDeltaRangeUncertaintyMeters,
+          'automaticGainControlLevelDb': element.automaticGainControlLevelDb,
+          'carrierFrequencyHz': element.carrierFrequencyHz,
+          'cn0DbHz': element.cn0DbHz,
+          'constellationType': element.constellationType,
+          'multipathIndicator': element.multipathIndicator,
+          'pseudorangeRateMetersPerSecond':
+              element.pseudorangeRateMetersPerSecond,
+          'pseudorangeRateUncertaintyMetersPerSecond':
+              element.pseudorangeRateUncertaintyMetersPerSecond,
+          'receivedSvTimeNanos': element.receivedSvTimeNanos,
+          'receivedSvTimeUncertaintyNanos':
+              element.receivedSvTimeUncertaintyNanos,
+          'snrInDb': element.snrInDb,
+          'state': element.state,
+          'svid': element.svid,
+          'timeOffsetNanos': element.timeOffsetNanos
+        };
+
+        data.forEach((key, value) {
+          if (isString(value)) {
+            tags[key] = value;
+          } else if (isDouble(value) || isInteger(value)) {
+            fields[key] = value;
+          }
+        });
+        tags['mac-address'] = getMapDeviceInfo();
+        tags["date"] = nowDate();
+      });
+      WebService.send("raw", tags, fields);
+    });
+
+    RawGnss().gnssNavigationMessageEvents.listen((e) {
+      print("navigation");
+      print(e.string.toString());
+    });
+
+    RawGnss().gnssStatusEvents.listen((e) {
+      DateTime nowDateA = DateTime.now();
+      if (nowDateA.difference(lastDate).inSeconds >= 10) {
+        lastDate = DateTime.now();
+        e.status?.forEach((element) {
+          Map<String, dynamic> data = {
+            'azimuthDegrees': element.azimuthDegrees.toString(),
+            'carrierFrequencyHz': element.carrierFrequencyHz.toString(),
+            'cn0DbHz': element.cn0DbHz.toString(),
+            'constellationType': element.constellationType,
+            'elevationDegrees': element.elevationDegrees.toString(),
+            'svid': element.svid.toString(),
+            'hasAlmanacData': element.hasAlmanacData.toString(),
+            'hasCarrierFrequencyHz': element.hasCarrierFrequencyHz.toString(),
+            'hasEphemerisData': element.hasEphemerisData.toString(),
+            'usedInFix': element.usedInFix.toString(),
+          };
+          Map<String, dynamic> fields = {};
+          Map<String, dynamic> tags = {};
+          tags["satelliteCount"] = e.satelliteCount;
+          data.forEach((key, value) {
+            if (isString(value)) {
+              tags[key] = value;
+            } else if (isDouble(value) || isInteger(value)) {
+              fields[key] = value;
+            }
+          });
+          tags['mac-address'] = getMapDeviceInfo();
+          tags["date"] = nowDate();
+
+          WebService.send("status", tags, fields);
+        });
+      }
+    });
+    Permission.location
+        .request()
+        .then((value) => setState(() => _hasPermissions = value.isGranted));
+  }
+
+  String nowDate() {
+    final DateTime now = DateTime.now();
+    final DateFormat formatter = DateFormat('dd-MM-yyyy HH:mm:ss');
+    final String formatted = formatter.format(now);
+    return formatted;
+  }
+
+  bool isString(dynamic value) {
+    return value is String;
+  }
+
+  bool isDouble(dynamic value) {
+    return value is Double;
+  }
+
+  bool isInteger(dynamic value) {
+    return value is int;
+  }
+
+  Map<String, dynamic> getMapDeviceInfo() {
+    Map<String, dynamic> data = {
+      'version': Data.deviceInfo?.version.codename ?? "",
+      'board': Data.deviceInfo?.board ?? "",
+      'bootloader': Data.deviceInfo?.bootloader ?? "",
+      'brand': Data.deviceInfo?.brand ?? "",
+      'device': Data.deviceInfo?.device ?? "",
+      'display': Data.deviceInfo?.display ?? "",
+      'fingerprint': Data.deviceInfo?.fingerprint ?? "",
+      'hardware': Data.deviceInfo?.hardware ?? "",
+      'host': Data.deviceInfo?.host ?? "",
+      'id': Data.deviceInfo?.id ?? "",
+      'manufacturer': Data.deviceInfo?.manufacturer ?? "",
+      'model': Data.deviceInfo?.model ?? "",
+      'product': Data.deviceInfo?.product ?? "",
+    };
+    return data;
   }
 
   @override

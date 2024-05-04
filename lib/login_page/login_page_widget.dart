@@ -1,3 +1,10 @@
+import 'dart:ffi';
+
+import 'package:device_info_plus/device_info_plus.dart';
+import 'package:raw_gnss/raw_gnss.dart';
+
+import '../Data.dart';
+import '../WebService/WebService.dart';
 import '/backend/api_requests/api_calls.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -15,12 +22,13 @@ class LoginPageWidget extends StatefulWidget {
 
 class _LoginPageWidgetState extends State<LoginPageWidget> {
   late LoginPageModel _model;
+  bool isLoading = true;
+  late AndroidDeviceInfo androidInfo;
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
-    super.initState();
     _model = createModel(context, () => LoginPageModel());
 
     _model.textController1 ??= TextEditingController();
@@ -28,6 +36,19 @@ class _LoginPageWidgetState extends State<LoginPageWidget> {
 
     _model.textController2 ??= TextEditingController();
     _model.textFieldFocusNode2 ??= FocusNode();
+  }
+
+  void didChangeDependencies() async {
+    DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
+    setState(() {
+      isLoading = true;
+    });
+    androidInfo = await deviceInfo.androidInfo;
+    Data.deviceInfo = await deviceInfo.androidInfo;
+    setState(() {
+      isLoading = false;
+    });
+    super.didChangeDependencies();
   }
 
   @override
@@ -67,8 +88,8 @@ class _LoginPageWidgetState extends State<LoginPageWidget> {
                   ),
                   alignment: const AlignmentDirectional(-1.0, 0.0),
                   child: Padding(
-                    padding:
-                        const EdgeInsetsDirectional.fromSTEB(32.0, 0.0, 0.0, 0.0),
+                    padding: const EdgeInsetsDirectional.fromSTEB(
+                        32.0, 0.0, 0.0, 0.0),
                     child: Text(
                       'Galileo Master',
                       style: FlutterFlowTheme.of(context).displaySmall.override(
@@ -81,8 +102,8 @@ class _LoginPageWidgetState extends State<LoginPageWidget> {
                 Align(
                   alignment: const AlignmentDirectional(0.0, 0.0),
                   child: Padding(
-                    padding:
-                        const EdgeInsetsDirectional.fromSTEB(32.0, 32.0, 32.0, 32.0),
+                    padding: const EdgeInsetsDirectional.fromSTEB(
+                        32.0, 32.0, 32.0, 32.0),
                     child: Column(
                       mainAxisSize: MainAxisSize.max,
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -285,7 +306,8 @@ class _LoginPageWidgetState extends State<LoginPageWidget> {
                                             .primaryText,
                                       ),
                                     ),
-                                    duration: const Duration(milliseconds: 4000),
+                                    duration:
+                                        const Duration(milliseconds: 4000),
                                     backgroundColor:
                                         FlutterFlowTheme.of(context).secondary,
                                   ),
