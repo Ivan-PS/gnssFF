@@ -550,7 +550,7 @@ class _MainPageWidgetState extends State<MainPageWidget>
                         child: FlutterFlowDropDown<String>(
                           controller: _model.dropDownValueController ??=
                               FormFieldController<String>(null),
-                          options: const ['Option 1'],
+                          options: const [''],
                           onChanged: (val) =>
                               setState(() => _model.dropDownValue = val),
                           width: 300.0,
@@ -582,6 +582,43 @@ class _MainPageWidgetState extends State<MainPageWidget>
                       ),
                     ),
                   ],
+                ),
+                Padding(
+                  padding: const EdgeInsetsDirectional.fromSTEB(0.0, 8.0, 0.0, 8.0),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.max,
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      Container(
+                        width: 100.0,
+                        height: 100.0,
+                        decoration: BoxDecoration(
+                          color:
+                              FlutterFlowTheme.of(context).secondaryBackground,
+                          borderRadius: BorderRadius.circular(18.0),
+                        ),
+                        child: Icon(
+                          Icons.person,
+                          color: FlutterFlowTheme.of(context).secondaryText,
+                          size: 50.0,
+                        ),
+                      ),
+                      Container(
+                        width: 100.0,
+                        height: 100.0,
+                        decoration: BoxDecoration(
+                          color:
+                              FlutterFlowTheme.of(context).secondaryBackground,
+                          borderRadius: BorderRadius.circular(18.0),
+                        ),
+                        child: Icon(
+                          Icons.groups_2,
+                          color: FlutterFlowTheme.of(context).secondaryText,
+                          size: 50.0,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
                 Column(
                   mainAxisSize: MainAxisSize.max,
