@@ -45,87 +45,88 @@ class _SatellitiesPageWidgetState extends State<SatellitiesPageWidget> {
           top: true,
           child: Padding(
             padding: const EdgeInsetsDirectional.fromSTEB(16.0, 0.0, 16.0, 0.0),
-            child: Column(
-              mainAxisSize: MainAxisSize.max,
-              children: [
-                Row(
-                  mainAxisSize: MainAxisSize.max,
-                  children: [
-                    Expanded(
-                      child: Padding(
-                        padding:
-                            const EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 16.0),
-                        child: FlutterFlowDropDown<String>(
-                          controller: _model.dropDownValueController ??=
-                              FormFieldController<String>(null),
-                          options: const [
-                            'Satellite 1',
-                            'Satellite 2',
-                            'Satellite 3',
-                            'Satellite 4',
-                            'Satellite 5',
-                            'Satellite 6',
-                            'Satellite 7',
-                            'Satellite 8',
-                            'Satellite 9',
-                            'Satellite 10',
-                            'Satellite 11',
-                            'Satellite 12',
-                            'Satellite 13',
-                            'Satellite 14',
-                            'Satellite 15',
-                            'Satellite 16',
-                            'Satellite 17',
-                            'Satellite 18',
-                            'Satellite 19',
-                            'Satellite 20',
-                            'Satellite 21',
-                            'Satellite 22',
-                            'Satellite 23',
-                            'Satellite 24',
-                            'Satellite 25',
-                            'Satellite 26',
-                            'Satellite 27',
-                            'Satellite 28',
-                            'Satellite 29',
-                            'Satellite30',
-                            '31',
-                            '32'
-                          ],
-                          onChanged: (val) =>
-                              setState(() => _model.dropDownValue = val),
-                          width: 300.0,
-                          height: 56.0,
-                          textStyle:
-                              FlutterFlowTheme.of(context).bodyMedium.override(
-                                    fontFamily: 'Readex Pro',
-                                    letterSpacing: 0.0,
-                                  ),
-                          hintText: 'Please select...',
-                          icon: Icon(
-                            Icons.keyboard_arrow_down_rounded,
-                            color: FlutterFlowTheme.of(context).secondaryText,
-                            size: 24.0,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.max,
+                children: [
+                  Row(
+                    mainAxisSize: MainAxisSize.max,
+                    children: [
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsetsDirectional.fromSTEB(
+                              0.0, 0.0, 0.0, 16.0),
+                          child: FlutterFlowDropDown<String>(
+                            controller: _model.dropDownValueController ??=
+                                FormFieldController<String>(null),
+                            options: const [
+                              'Satellite 1',
+                              'Satellite 2',
+                              'Satellite 3',
+                              'Satellite 4',
+                              'Satellite 5',
+                              'Satellite 6',
+                              'Satellite 7',
+                              'Satellite 8',
+                              'Satellite 9',
+                              'Satellite 10',
+                              'Satellite 11',
+                              'Satellite 12',
+                              'Satellite 13',
+                              'Satellite 14',
+                              'Satellite 15',
+                              'Satellite 16',
+                              'Satellite 17',
+                              'Satellite 18',
+                              'Satellite 19',
+                              'Satellite 20',
+                              'Satellite 21',
+                              'Satellite 22',
+                              'Satellite 23',
+                              'Satellite 24',
+                              'Satellite 25',
+                              'Satellite 26',
+                              'Satellite 27',
+                              'Satellite 28',
+                              'Satellite 29',
+                              'Satellite 30',
+                              'Satellite 31',
+                              'Satellite 32'
+                            ],
+                            onChanged: (val) =>
+                                setState(() => _model.dropDownValue = val),
+                            width: 300.0,
+                            height: 56.0,
+                            textStyle: FlutterFlowTheme.of(context)
+                                .bodyMedium
+                                .override(
+                                  fontFamily: 'Readex Pro',
+                                  letterSpacing: 0.0,
+                                ),
+                            hintText: 'Please select...',
+                            icon: Icon(
+                              Icons.keyboard_arrow_down_rounded,
+                              color: FlutterFlowTheme.of(context).secondaryText,
+                              size: 24.0,
+                            ),
+                            fillColor: FlutterFlowTheme.of(context)
+                                .secondaryBackground,
+                            elevation: 2.0,
+                            borderColor: FlutterFlowTheme.of(context).alternate,
+                            borderWidth: 2.0,
+                            borderRadius: 8.0,
+                            margin: const EdgeInsetsDirectional.fromSTEB(
+                                16.0, 4.0, 16.0, 4.0),
+                            hidesUnderline: true,
+                            isOverButton: true,
+                            isSearchable: false,
+                            isMultiSelect: false,
                           ),
-                          fillColor:
-                              FlutterFlowTheme.of(context).secondaryBackground,
-                          elevation: 2.0,
-                          borderColor: FlutterFlowTheme.of(context).alternate,
-                          borderWidth: 2.0,
-                          borderRadius: 8.0,
-                          margin: const EdgeInsetsDirectional.fromSTEB(
-                              16.0, 4.0, 16.0, 4.0),
-                          hidesUnderline: true,
-                          isOverButton: true,
-                          isSearchable: false,
-                          isMultiSelect: false,
                         ),
                       ),
-                    ),
-                  ],
-                ),
-                SingleChildScrollView(
-                  child: Column(
+                    ],
+                  ),
+                  Column(
                     mainAxisSize: MainAxisSize.max,
                     children: [
                       wrapWithModel(
@@ -160,8 +161,8 @@ class _SatellitiesPageWidgetState extends State<SatellitiesPageWidget> {
                       ),
                     ],
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
