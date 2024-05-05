@@ -295,6 +295,14 @@ class _LoginPageWidgetState extends State<LoginPageWidget> {
                                 password: _model.textController2.text,
                               );
                               if ((_model.apiResultqie?.succeeded ?? true)) {
+                                setState(() {
+                                  FFAppState().userId =
+                                      HttpsrtxgvmuksdevtunnelsmsGroup.loginCall
+                                          .userid(
+                                    (_model.apiResultqie?.jsonBody ?? ''),
+                                  )!;
+                                });
+
                                 context.pushNamed('MainPage');
                               } else {
                                 ScaffoldMessenger.of(context).showSnackBar(

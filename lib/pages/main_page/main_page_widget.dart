@@ -1,10 +1,19 @@
+import 'dart:async';
 import 'dart:ffi';
 
+import 'package:fl_chart/fl_chart.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/widgets.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:raw_gnss/raw_gnss.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../Data.dart';
 import '../../WebService/WebService.dart';
+import '../../components/linechart.dart';
+import '../../flutter_flow/flutter_flow_drop_down.dart';
+import '../../flutter_flow/form_field_controller.dart';
 import '/flutter_flow/flutter_flow_animations.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -23,12 +32,17 @@ class MainPageWidget extends StatefulWidget {
 
 class _MainPageWidgetState extends State<MainPageWidget>
     with TickerProviderStateMixin {
+  bool isPersonSelected = false;
+  bool isPersonsSelected = false;
   late MainPageModel _model;
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
   final animationsMap = <String, AnimationInfo>{};
   bool _hasPermissions = false;
+  Timer? timer;
+
+  Widget lineChart = Container();
 
   @override
   void initState() {
@@ -195,14 +209,45 @@ class _MainPageWidgetState extends State<MainPageWidget>
       this,
     );
     startReading();
+    _getCurrentPosition();
+    _getGalieos();
+    timer = Timer.periodic(
+        Duration(seconds: 15), (Timer t) => _getCurrentPosition());
+  }
+
+  String galileos = "";
+  _getGalieos() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    int userId = prefs.getInt("ff_userId") ?? 0;
+    Map<String, dynamic> newGalileos = await WebService.getGalileos(userId);
+    print("new: ${newGalileos.toString()}");
+    setState(() {
+      galileos = newGalileos["count"].toString();
+    });
+  }
+
+  late Position _currentPosition;
+  Future<void> _getCurrentPosition() async {
+    final position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high);
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    int userId = prefs.getInt("ff_userId") ?? 0;
+    _currentPosition = position;
+    Map<String, dynamic> data = {
+      'LongitudeDegrees': _currentPosition.longitude.toString(),
+      'LatitudeDegrees': _currentPosition.latitude.toString(),
+      'SpeedMps': _currentPosition.speed.toString(),
+      'SpeedAccuracyMps': _currentPosition.speed.toString(),
+      'AccuracyMeters': _currentPosition.accuracy.toString(),
+      'AltitudeMeters': _currentPosition.altitude.toString()
+    };
+    WebService.send("fix", data, {}, userId);
   }
 
   void startReading() {
     DateTime lastDate = DateTime.now();
 
-    super.initState();
-
-    RawGnss().gnssMeasurementEvents.listen((e) {
+    RawGnss().gnssMeasurementEvents.listen((e) async {
       Map<String, dynamic> fields = {};
       Map<String, dynamic> tags = {};
 
@@ -242,7 +287,9 @@ class _MainPageWidgetState extends State<MainPageWidget>
         tags['mac-address'] = getMapDeviceInfo();
         tags["date"] = nowDate();
       });
-      WebService.send("raw", tags, fields);
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      int userId = prefs.getInt("ff_userId") ?? 0;
+      WebService.send("raw", tags, fields, userId);
     });
 
     RawGnss().gnssNavigationMessageEvents.listen((e) {
@@ -254,7 +301,7 @@ class _MainPageWidgetState extends State<MainPageWidget>
       DateTime nowDateA = DateTime.now();
       if (nowDateA.difference(lastDate).inSeconds >= 10) {
         lastDate = DateTime.now();
-        e.status?.forEach((element) {
+        e.status?.forEach((element) async {
           Map<String, dynamic> data = {
             'azimuthDegrees': element.azimuthDegrees.toString(),
             'carrierFrequencyHz': element.carrierFrequencyHz.toString(),
@@ -279,8 +326,9 @@ class _MainPageWidgetState extends State<MainPageWidget>
           });
           tags['mac-address'] = getMapDeviceInfo();
           tags["date"] = nowDate();
-
-          WebService.send("status", tags, fields);
+          SharedPreferences prefs = await SharedPreferences.getInstance();
+          int userId = prefs.getInt("ff_userId") ?? 0;
+          WebService.send("status", tags, fields, userId);
         });
       }
     });
@@ -345,147 +393,266 @@ class _MainPageWidgetState extends State<MainPageWidget>
         backgroundColor: const Color(0xADCFDAFB),
         body: SafeArea(
           top: true,
-          child: Column(
-            mainAxisSize: MainAxisSize.max,
-            children: [
-              Column(
-                mainAxisSize: MainAxisSize.max,
-                children: [
-                  Row(
-                    mainAxisSize: MainAxisSize.max,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsetsDirectional.fromSTEB(
-                            16.0, 0.0, 16.0, 0.0),
-                        child: Container(
-                          width: 194.0,
-                          height: 40.0,
-                          decoration: BoxDecoration(
-                            color: FlutterFlowTheme.of(context)
-                                .secondaryBackground,
-                            borderRadius: const BorderRadius.only(
-                              bottomLeft: Radius.circular(0.0),
-                              bottomRight: Radius.circular(0.0),
-                              topLeft: Radius.circular(12.0),
-                              topRight: Radius.circular(12.0),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.max,
+              children: [
+                Column(
+                  mainAxisSize: MainAxisSize.max,
+                  children: [
+                    Row(
+                      mainAxisSize: MainAxisSize.max,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsetsDirectional.fromSTEB(
+                              16.0, 16.0, 16.0, 0.0),
+                          child: Container(
+                            width: 194.0,
+                            height: 40.0,
+                            decoration: BoxDecoration(
+                              color: FlutterFlowTheme.of(context)
+                                  .secondaryBackground,
+                              borderRadius: const BorderRadius.only(
+                                bottomLeft: Radius.circular(0.0),
+                                bottomRight: Radius.circular(0.0),
+                                topLeft: Radius.circular(12.0),
+                                topRight: Radius.circular(12.0),
+                              ),
                             ),
-                          ),
-                          child: Align(
-                            alignment: const AlignmentDirectional(-1.0, 0.0),
-                            child: Padding(
-                              padding: const EdgeInsetsDirectional.fromSTEB(
-                                  12.0, 0.0, 0.0, 0.0),
-                              child: Text(
-                                'Galielo Contribution',
-                                style: FlutterFlowTheme.of(context)
-                                    .bodyMedium
-                                    .override(
-                                      fontFamily: 'Readex Pro',
-                                      fontSize: 18.0,
-                                      letterSpacing: 0.0,
-                                    ),
+                            child: Align(
+                              alignment: const AlignmentDirectional(-1.0, 0.0),
+                              child: Padding(
+                                padding: const EdgeInsetsDirectional.fromSTEB(
+                                    12.0, 0.0, 0.0, 0.0),
+                                child: Text(
+                                  'Galielo Contribution',
+                                  style: FlutterFlowTheme.of(context)
+                                      .bodyMedium
+                                      .override(
+                                        fontFamily: 'Readex Pro',
+                                        fontSize: 18.0,
+                                        letterSpacing: 0.0,
+                                      ),
+                                ),
                               ),
                             ),
                           ),
                         ),
+                      ],
+                    ),
+                  ],
+                ),
+                Padding(
+                  padding: const EdgeInsetsDirectional.fromSTEB(
+                      16.0, 0.0, 16.0, 0.0),
+                  child: Container(
+                    width: double.infinity,
+                    height: 110.0,
+                    decoration: BoxDecoration(
+                      color: FlutterFlowTheme.of(context).secondaryBackground,
+                      borderRadius: const BorderRadius.only(
+                        bottomLeft: Radius.circular(12.0),
+                        bottomRight: Radius.circular(12.0),
+                        topLeft: Radius.circular(0.0),
+                        topRight: Radius.circular(12.0),
                       ),
-                    ],
-                  ),
-                  Padding(
-                    padding: const EdgeInsetsDirectional.fromSTEB(
-                        16.0, 0.0, 16.0, 0.0),
-                    child: Container(
-                      width: double.infinity,
-                      height: 170.0,
-                      decoration: BoxDecoration(
-                        color: FlutterFlowTheme.of(context).secondaryBackground,
-                        borderRadius: const BorderRadius.only(
-                          bottomLeft: Radius.circular(12.0),
-                          bottomRight: Radius.circular(12.0),
-                          topLeft: Radius.circular(0.0),
-                          topRight: Radius.circular(12.0),
-                        ),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.max,
+                        children: [
+                          Expanded(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.max,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsetsDirectional.fromSTEB(
+                                      0.0, 8.0, 0.0, 0.0),
+                                  child: Text(
+                                    'Satellite Used:',
+                                    style: FlutterFlowTheme.of(context)
+                                        .headlineLarge
+                                        .override(
+                                          fontFamily: 'Outfit',
+                                          fontSize: 16.0,
+                                          letterSpacing: 0.0,
+                                        ),
+                                  ),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsetsDirectional.fromSTEB(
+                                      0.0, 8.0, 0.0, 0.0),
+                                  child: Text(
+                                    '${galileos}',
+                                    style: FlutterFlowTheme.of(context)
+                                        .headlineLarge
+                                        .override(
+                                          fontFamily: 'Outfit',
+                                          color: FlutterFlowTheme.of(context)
+                                              .primary,
+                                          letterSpacing: 0.0,
+                                        ),
+                                  ),
+                                ),
+                              ],
+                            ).animateOnPageLoad(
+                                animationsMap['columnOnPageLoadAnimation1']!),
+                          ),
+                        ],
                       ),
+                    ),
+                  ).animateOnPageLoad(
+                      animationsMap['containerOnPageLoadAnimation1']!),
+                ),
+                Row(
+                  mainAxisSize: MainAxisSize.max,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Expanded(
                       child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.max,
-                          children: [
-                            Expanded(
-                              child: Column(
-                                mainAxisSize: MainAxisSize.max,
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Padding(
-                                    padding:
-                                        const EdgeInsetsDirectional.fromSTEB(
-                                            0.0, 8.0, 0.0, 0.0),
-                                    child: Text(
-                                      'Satellite Used:',
-                                      style: FlutterFlowTheme.of(context)
-                                          .headlineLarge
-                                          .override(
-                                            fontFamily: 'Outfit',
-                                            fontSize: 16.0,
-                                            letterSpacing: 0.0,
-                                          ),
-                                    ),
-                                  ),
-                                  Padding(
-                                    padding:
-                                        const EdgeInsetsDirectional.fromSTEB(
-                                            0.0, 8.0, 0.0, 0.0),
-                                    child: Text(
-                                      '\$500.20',
-                                      style: FlutterFlowTheme.of(context)
-                                          .headlineLarge
-                                          .override(
-                                            fontFamily: 'Outfit',
-                                            color: FlutterFlowTheme.of(context)
-                                                .primary,
-                                            letterSpacing: 0.0,
-                                          ),
-                                    ),
-                                  ),
-                                ],
-                              ).animateOnPageLoad(
-                                  animationsMap['columnOnPageLoadAnimation']!),
-                            ),
-                            CircularPercentIndicator(
-                              percent: 0.55,
-                              radius: 50.0,
-                              lineWidth: 8.0,
-                              animation: true,
-                              animateFromLastPercent: true,
-                              progressColor:
-                                  FlutterFlowTheme.of(context).primary,
-                              backgroundColor:
-                                  FlutterFlowTheme.of(context).alternate,
-                              center: Text(
-                                '55%',
-                                style: FlutterFlowTheme.of(context)
-                                    .headlineMedium
-                                    .override(
-                                      fontFamily: 'Outfit',
-                                      color: FlutterFlowTheme.of(context)
-                                          .primaryText,
-                                      fontSize: 22.0,
-                                      letterSpacing: 0.0,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                              ),
-                            ).animateOnPageLoad(animationsMap[
-                                'progressBarOnPageLoadAnimation']!),
+                        padding: const EdgeInsetsDirectional.fromSTEB(
+                            16.0, 16.0, 16.0, 0.0),
+                        child: FlutterFlowDropDown<String>(
+                          controller: _model.dropDownValueController ??=
+                              FormFieldController<String>(null),
+                          options: const [
+                            'speedMps',
+                            'accuracyMeters',
+                            'latitudeDegrees',
+                            'longitudeDegrees',
+                            'speedAccuracyMps'
                           ],
+                          onChanged: (val) async {
+                            SharedPreferences prefs =
+                                await SharedPreferences.getInstance();
+                            int userId = prefs.getInt("ff_userId") ?? 0;
+                            List<dynamic> listDB =
+                                await WebService.getGrafic("fix", val!, userId);
+                            print(listDB.toString());
+                            setState(() {
+                              lineChart = LineChartCustom(data: listDB);
+                            });
+                            setState(() => _model.dropDownValue = val);
+                          },
+                          width: 300.0,
+                          height: 56.0,
+                          textStyle:
+                              FlutterFlowTheme.of(context).bodyMedium.override(
+                                    fontFamily: 'Readex Pro',
+                                    letterSpacing: 0.0,
+                                  ),
+                          hintText: 'Please select...',
+                          icon: Icon(
+                            Icons.keyboard_arrow_down_rounded,
+                            color: FlutterFlowTheme.of(context).secondaryText,
+                            size: 24.0,
+                          ),
+                          fillColor:
+                              FlutterFlowTheme.of(context).secondaryBackground,
+                          elevation: 2.0,
+                          borderColor: FlutterFlowTheme.of(context).alternate,
+                          borderWidth: 2.0,
+                          borderRadius: 8.0,
+                          margin: const EdgeInsetsDirectional.fromSTEB(
+                              16.0, 4.0, 16.0, 4.0),
+                          hidesUnderline: true,
+                          isOverButton: true,
+                          isSearchable: false,
+                          isMultiSelect: false,
                         ),
                       ),
-                    ).animateOnPageLoad(
-                        animationsMap['containerOnPageLoadAnimation']!),
-                  ),
-                ],
-              ),
-            ],
+                    ),
+                  ],
+                ),
+                Column(
+                  mainAxisSize: MainAxisSize.max,
+                  children: [
+                    Row(
+                      mainAxisSize: MainAxisSize.max,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsetsDirectional.fromSTEB(
+                              16.0, 16.0, 16.0, 0.0),
+                          child: Container(
+                            width: 194.0,
+                            height: 40.0,
+                            decoration: BoxDecoration(
+                              color: FlutterFlowTheme.of(context)
+                                  .secondaryBackground,
+                              borderRadius: const BorderRadius.only(
+                                bottomLeft: Radius.circular(0.0),
+                                bottomRight: Radius.circular(0.0),
+                                topLeft: Radius.circular(12.0),
+                                topRight: Radius.circular(12.0),
+                              ),
+                            ),
+                            child: Align(
+                              alignment: const AlignmentDirectional(-1.0, 0.0),
+                              child: Padding(
+                                padding: const EdgeInsetsDirectional.fromSTEB(
+                                    12.0, 0.0, 0.0, 0.0),
+                                child: Text(
+                                  'Graphic information',
+                                  style: FlutterFlowTheme.of(context)
+                                      .bodyMedium
+                                      .override(
+                                        fontFamily: 'Readex Pro',
+                                        fontSize: 18.0,
+                                        letterSpacing: 0.0,
+                                      ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+                Padding(
+                  padding: const EdgeInsetsDirectional.fromSTEB(
+                      16.0, 0.0, 16.0, 0.0),
+                  child: Container(
+                    width: double.infinity,
+                    height: 410.0,
+                    decoration: BoxDecoration(
+                      color: FlutterFlowTheme.of(context).secondaryBackground,
+                      borderRadius: const BorderRadius.only(
+                        bottomLeft: Radius.circular(12.0),
+                        bottomRight: Radius.circular(12.0),
+                        topLeft: Radius.circular(0.0),
+                        topRight: Radius.circular(12.0),
+                      ),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.max,
+                        children: [
+                          Expanded(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.max,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Container(
+                                  child: lineChart,
+                                )
+                              ],
+                            ).animateOnPageLoad(
+                                animationsMap['columnOnPageLoadAnimation4']!),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ).animateOnPageLoad(
+                      animationsMap['containerOnPageLoadAnimation4']!),
+                ),
+              ],
+            ),
           ),
         ),
       ),

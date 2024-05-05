@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '/index.dart';
+import '/main.dart';
+
 import '/flutter_flow/flutter_flow_util.dart';
 
 export 'package:go_router/go_router.dart';
@@ -54,12 +56,28 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
         FFRoute(
           name: 'MainPage',
           path: '/mainPage',
-          builder: (context, params) => const MainPageWidget(),
+          builder: (context, params) => params.isEmpty
+              ? const NavBarPage(initialPage: 'MainPage')
+              : const MainPageWidget(),
         ),
         FFRoute(
           name: 'SelectSatellite',
           path: '/selectSatellite',
           builder: (context, params) => const SelectSatelliteWidget(),
+        ),
+        FFRoute(
+          name: 'MapPage',
+          path: '/mapPage',
+          builder: (context, params) => params.isEmpty
+              ? const NavBarPage(initialPage: 'MapPage')
+              : const MapPageWidget(),
+        ),
+        FFRoute(
+          name: 'SatellitiesPage',
+          path: '/satellitiesPage',
+          builder: (context, params) => params.isEmpty
+              ? const NavBarPage(initialPage: 'SatellitiesPage')
+              : const SatellitiesPageWidget(),
         )
       ].map((r) => r.toRoute(appStateNotifier)).toList(),
     );
@@ -223,7 +241,8 @@ class TransitionInfo {
   final Duration duration;
   final Alignment? alignment;
 
-  static TransitionInfo appDefault() => const TransitionInfo(hasTransition: false);
+  static TransitionInfo appDefault() =>
+      const TransitionInfo(hasTransition: false);
 }
 
 class RootPageContext {

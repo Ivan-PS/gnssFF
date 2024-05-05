@@ -122,7 +122,8 @@ class _CustomPercentTextWidgetState extends State<CustomPercentTextWidget>
           mainAxisSize: MainAxisSize.max,
           children: [
             Padding(
-              padding: const EdgeInsetsDirectional.fromSTEB(16.0, 0.0, 16.0, 0.0),
+              padding:
+                  const EdgeInsetsDirectional.fromSTEB(16.0, 0.0, 16.0, 0.0),
               child: Container(
                 width: 256.0,
                 height: 40.0,
@@ -133,21 +134,6 @@ class _CustomPercentTextWidgetState extends State<CustomPercentTextWidget>
                     bottomRight: Radius.circular(0.0),
                     topLeft: Radius.circular(12.0),
                     topRight: Radius.circular(12.0),
-                  ),
-                ),
-                child: Align(
-                  alignment: const AlignmentDirectional(-1.0, 0.0),
-                  child: Padding(
-                    padding:
-                        const EdgeInsetsDirectional.fromSTEB(12.0, 0.0, 0.0, 0.0),
-                    child: Text(
-                      'Galielo Contribution',
-                      style: FlutterFlowTheme.of(context).bodyMedium.override(
-                            fontFamily: 'Readex Pro',
-                            fontSize: 18.0,
-                            letterSpacing: 0.0,
-                          ),
-                    ),
                   ),
                 ),
               ),

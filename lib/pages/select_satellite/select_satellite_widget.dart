@@ -50,8 +50,8 @@ class _SelectSatelliteWidgetState extends State<SelectSatelliteWidget> {
                 children: [
                   Expanded(
                     child: Padding(
-                      padding:
-                          const EdgeInsetsDirectional.fromSTEB(16.0, 0.0, 16.0, 0.0),
+                      padding: const EdgeInsetsDirectional.fromSTEB(
+                          16.0, 0.0, 16.0, 0.0),
                       child: FlutterFlowDropDown<String>(
                         controller: _model.dropDownValueController ??=
                             FormFieldController<String>(null),
