@@ -19,6 +19,9 @@ class FFAppState extends ChangeNotifier {
     _safeInit(() {
       _userId = prefs.getInt('ff_userId') ?? _userId;
     });
+    _safeInit(() {
+      _session = prefs.getString('ff_session') ?? _session;
+    });
   }
 
   void update(VoidCallback callback) {
@@ -33,6 +36,13 @@ class FFAppState extends ChangeNotifier {
   set userId(int value) {
     _userId = value;
     prefs.setInt('ff_userId', value);
+  }
+
+  String _session = '';
+  String get session => _session;
+  set session(String value) {
+    _session = value;
+    prefs.setString('ff_session', value);
   }
 }
 
